@@ -6,8 +6,10 @@
 .global Reset_Handler
 .global Default_Handler
 .global HardFault_Handler
+.global MemManage_Handler
 .global SysTick_Handler
 .global PendSV_Handler
+.global DMA1_Stream5_IRQHandler
 
 .section .isr_vector, "a", %progbits
 .type vector_table, %object
@@ -18,7 +20,7 @@ vector_table:
     .word Reset_Handler
     .word Default_Handler
     .word HardFault_Handler
-    .word Default_Handler
+    .word MemManage_Handler
     .word Default_Handler
     .word Default_Handler
     .word 0
@@ -31,6 +33,19 @@ vector_table:
     .word SysTick_Handler
     .word PendSV_Handler
     .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word Default_Handler
+    .word DMA1_Stream5_IRQHandler
 
 .section .text.Reset_Handler
 .type Reset_Handler, %function
@@ -68,4 +83,11 @@ Default_Handler:
 .section .text.HardFault_Handler
 .type HardFault_Handler, %function
 HardFault_Handler:
+    b .
+
+.section .text.MemManage_Handler
+.type MemManage_Handler, %function
+MemManage_Handler:
+    cpsid i
+    bl utms_estop_trigger
     b .

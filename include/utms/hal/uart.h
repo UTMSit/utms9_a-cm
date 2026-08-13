@@ -9,5 +9,6 @@ void uart_puts(const char *s);
 void uart_print_hex(uint32_t val);
 char uart_getc(void);
 uint8_t uart_has_data(void);
+void DMA1_Stream5_IRQHandler(void);
 
 #endif

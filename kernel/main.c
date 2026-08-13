@@ -8,6 +8,8 @@
 #include <utms/sdk/planner.h>
 #include <utms/sdk/kinematics.h>
 #include <utms/sdk/motion_profile.h>
+#include <utms/sdk/endstop.h>
+#include <utms/sdk/encoder.h>
 
 static uint8_t stack1[1024] __attribute__((aligned(8)));
 static uint8_t stack2[1024] __attribute__((aligned(8)));
@@ -55,6 +57,18 @@ static step_timer_t timer_e = {
     .ccr = 500
 };
 
+static motion_profile_t motion_profile = {
+    .timers = { &timer_x, &timer_y, &timer_z, &timer_e },
+    .buffers = { step_profile_x, step_profile_y, step_profile_z, step_profile_e },
+    .buffer_len = 256
+};
+
+static endstop_t endstop_x = {
+    .port = GPIOB,
+    .pin = 0,
+    .triggered_level = 0
+};
+
 static void task1(void) {
     while (1) {
         GPIOD->ODR ^= (1UL << 12);
@@ -75,8 +89,12 @@ static void task3(void) {
     while (1) {
         planner_block_t *next = planner_get_next_block();
         if (next) {
-            uart_puts("Executing block\r\n");
-            motion_profile_generate(next, step_profile_x, 256, &timer_x);
+            if (endstop_is_triggered(&endstop_x)) {
+                uart_puts("Endstop X triggered, stopping motion\r\n");
+            } else {
+                uart_puts("Executing block\r\n");
+                motion_profile_generate(next, &motion_profile);
+            }
         }
         delay_ms(10);
     }
@@ -150,6 +168,8 @@ int main(void) {
     GPIOD->MODER &= ~(3UL << (15 * 2));
     GPIOD->MODER |= (1UL << (15 * 2));
 
+    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
+
     uart_init();
     uart_puts("UTMS9_a+cm: Kernel started\r\n");
 
@@ -157,7 +177,9 @@ int main(void) {
     axis_enable(0, 1);
     axis_set_dir(0, 1);
 
-    uart_puts("UTMS9_a+cm: Axes initialized\r\n");
+    endstop_init(&endstop_x);
+
+    uart_puts("UTMS9_a+cm: Axes and endstops initialized\r\n");
 
     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_TIM4EN;
 

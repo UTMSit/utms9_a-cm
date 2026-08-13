@@ -1,8 +1,11 @@
 #include <stdint.h>
 #include <utms/hal/stm32f4xx.h>
+#include <utms/hal/mpu.h>
+#include <utms/hal/estop.h>
 
 #define SCB_VTOR (*(volatile uint32_t *)0xE000ED08UL)
 #define SCB_SHPR3 (*(volatile uint32_t *)0xE000ED20UL)
+#define SCB_SHPR2 (*(volatile uint32_t *)0xE000ED1CUL)
 
 static void enable_fpu(void) {
     __asm__ volatile (
@@ -17,6 +20,7 @@ static void enable_fpu(void) {
 
 static void configure_interrupts(void) {
     SCB_SHPR3 = (0xFF << 24) | (0x00 << 16);
+    SCB_SHPR2 = (0x00 << 0);
 }
 
 void SystemInit(void) {
@@ -45,4 +49,7 @@ void SystemInit(void) {
     while ((RCC->CFGR & (3UL << 2)) != RCC_CFGR_SWS_PLL);
 
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+
+    utms_estop_init();
+    utms_mpu_init();
 }
