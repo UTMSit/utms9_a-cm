@@ -1,0 +1,59 @@
+AS = arm-none-eabi-as
+CC = arm-none-eabi-gcc
+LD = arm-none-eabi-ld
+OBJCOPY = arm-none-eabi-objcopy
+SIZE = arm-none-eabi-size
+
+ARCH = arm/cortex-m4
+
+ASFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O3 -Wall -Wextra -ffreestanding -nostdlib -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections -Iinclude
+LDFLAGS = -mcpu=cortex-m4 -mthumb -T arch/$(ARCH)/linker.ld -nostdlib -Wl,--gc-sections
+
+ASRCS = $(wildcard arch/$(ARCH)/*.S)
+CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c)
+OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
+
+arch/$(ARCH)/%.o: arch/$(ARCH)/%.S
+    $(AS) $(ASFLAGS) -o $@ $<
+eoc
+
+arch/$(ARCH)/%.o: arch/$(ARCH)/%.c
+    $(CC) $(CFLAGS) -c -o $@ $<
+eoc
+
+kernel/%.o: kernel/%.c
+    $(CC) $(CFLAGS) -c -o $@ $<
+eoc
+
+hal/%.o: hal/%.c
+    $(CC) $(CFLAGS) -c -o $@ $<
+eoc
+
+sdk/%.o: sdk/%.c
+    $(CC) $(CFLAGS) -c -o $@ $<
+eoc
+
+utms9.elf: $(OBJS)
+    $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
+    $(SIZE) $@
+eoc
+
+utms9.bin: utms9.elf
+    $(OBJCOPY) -O binary $< $@
+eoc
+
+build:
+    call utms9.bin
+    echo "=== UTMS9_a+cm BUILD COMPLETE ==="
+    +flags:
+        -fg(clean):
+            call clean
+            call utms9.bin
+        eofg
+    ;
+eoc
+
+clean:
+    rm -f $(OBJS) utms9.elf utms9.bin
+eoc

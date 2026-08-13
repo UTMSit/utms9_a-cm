@@ -1,0 +1,10 @@
+#ifndef UTMS_CONFIG_H
+#define UTMS_CONFIG_H
+
+#define UTMS_VERSION_MAJOR 9
+#define UTMS_VERSION_MINOR 0
+#define UTMS_VERSION_PATCH 0
+
+#define TARGET_ARCH_ARM_CORTEX_M4 1
+
+#endif
