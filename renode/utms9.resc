@@ -1,0 +1,4 @@
+mach create "utms9"
+machine LoadPlatformDescription @utms9.repl
+
+sysbus LoadELF @/home/user12ms/Projects/utms9_a_cm/utms9.elf
