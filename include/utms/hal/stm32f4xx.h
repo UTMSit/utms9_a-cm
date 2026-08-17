@@ -274,6 +274,12 @@ typedef struct {
 #define TIM_CCMR1_OC1PE     (1UL << 3)
 #define TIM_CCMR1_OC2M_PWM1 (6UL << 12)
 #define TIM_CCMR1_OC2PE     (1UL << 11)
+#define TIM_CCMR2_OC3M_PWM1 (6UL << 4)
+#define TIM_CCMR2_OC3PE     (1UL << 3)
+#define TIM_CCMR2_OC4M_PWM1 (6UL << 12)
+#define TIM_CCMR2_OC4PE     (1UL << 11)
+#define TIM_CCER_CC3E       (1UL << 8)
+#define TIM_CCER_CC4E       (1UL << 12)
 #define TIM_DIER_UDE        (1UL << 8)
 
 #define DMA_SxCR_CHSEL_0    (0UL << 25)

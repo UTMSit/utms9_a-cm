@@ -29,12 +29,20 @@ void utms_heater_init(utms_heater_t *h) {
 
     switch (h->pwm_channel) {
         case 1:
-            h->pwm_tim->CCMR1 = TIM_CCMR1_OC1M_PWM1 | TIM_CCMR1_OC1PE;
+            h->pwm_tim->CCMR1 |= TIM_CCMR1_OC1M_PWM1 | TIM_CCMR1_OC1PE;
             h->pwm_tim->CCER |= TIM_CCER_CC1E;
             break;
         case 2:
             h->pwm_tim->CCMR1 |= TIM_CCMR1_OC2M_PWM1 | TIM_CCMR1_OC2PE;
             h->pwm_tim->CCER |= TIM_CCER_CC2E;
+            break;
+        case 3:
+            h->pwm_tim->CCMR2 |= TIM_CCMR2_OC3M_PWM1 | TIM_CCMR2_OC3PE;
+            h->pwm_tim->CCER |= TIM_CCER_CC3E;
+            break;
+        case 4:
+            h->pwm_tim->CCMR2 |= TIM_CCMR2_OC4M_PWM1 | TIM_CCMR2_OC4PE;
+            h->pwm_tim->CCER |= TIM_CCER_CC4E;
             break;
     }
 

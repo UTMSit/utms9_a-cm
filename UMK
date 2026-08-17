@@ -10,10 +10,6 @@ ASFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O3 -Wall -Wextra -ffreestanding -nostdlib -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -ffunction-sections -fdata-sections -Iinclude
 LDFLAGS = -mcpu=cortex-m4 -mthumb -T arch/$(ARCH)/linker.ld -nostdlib -Wl,--gc-sections
 
-ASRCS = $(wildcard arch/$(ARCH)/*.S)
-CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c)
-OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
-
 arch/$(ARCH)/%.o: arch/$(ARCH)/%.S
     $(AS) $(ASFLAGS) -o $@ $<
 eoc
@@ -34,6 +30,10 @@ sdk/%.o: sdk/%.c
     $(CC) $(CFLAGS) -c -o $@ $<
 eoc
 
+machine/%.o: machine/%.c
+    $(CC) $(CFLAGS) -c -o $@ $<
+eoc
+
 utms9.elf: $(OBJS)
     $(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
     $(SIZE) $@
@@ -44,16 +44,45 @@ utms9.bin: utms9.elf
 eoc
 
 build:
+    ASRCS = $(wildcard arch/$(ARCH)/*.S)
+    CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c machine/renode_test/*.c)
+    OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
+    call utms9.elf
     call utms9.bin
-    echo "=== UTMS9_a+cm BUILD COMPLETE ==="
-    +flags:
-        -fg(clean):
-            call clean
-            call utms9.bin
-        eofg
-    ;
+    echo "=== UTMS9_a+cm BUILD COMPLETE (renode_test) ==="
+eoc
+
+build-stm32:
+    ASRCS = $(wildcard arch/$(ARCH)/*.S)
+    CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c machine/stm32f407/*.c)
+    OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
+    call utms9.elf
+    call utms9.bin
+    echo "=== UTMS9_a+cm BUILD COMPLETE (stm32f407) ==="
+eoc
+
+build-renode:
+    ASRCS = $(wildcard arch/$(ARCH)/*.S)
+    CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c machine/renode_test/*.c)
+    OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
+    call utms9.elf
+    call utms9.bin
+    echo "=== UTMS9_a+cm BUILD COMPLETE (renode_test) ==="
+eoc
+
+build-custom:
+    ASRCS = $(wildcard arch/$(ARCH)/*.S)
+    CSRCS = $(wildcard arch/$(ARCH)/*.c kernel/*.c hal/*.c sdk/*.c machine/$(MACHINE)/*.c)
+    OBJS = $(ASRCS:.S=.o) $(CSRCS:.c=.o)
+    if $(CUSTOM_CFLAGS)
+        CFLAGS = $(CFLAGS) $(CUSTOM_CFLAGS)
+    endif
+    call utms9.elf
+    call utms9.bin
+    echo "=== UTMS9_a+cm BUILD COMPLETE ($(MACHINE)) ==="
 eoc
 
 clean:
-    rm -f $(OBJS) utms9.elf utms9.bin
+    find . -name "*.o" -type f -delete
+    rm -f utms9.elf utms9.bin
 eoc

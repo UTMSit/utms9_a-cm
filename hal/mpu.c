@@ -14,11 +14,7 @@
 
 #define MPU_RASR_ENABLE           (1UL << 0)
 #define MPU_RASR_SIZE_SHIFT       1
-#define MPU_RASR_SRD_SHIFT        8
-#define MPU_RASR_B                (1UL << 16)
-#define MPU_RASR_C                (1UL << 17)
 #define MPU_RASR_S                (1UL << 18)
-#define MPU_RASR_TEX_SHIFT        19
 #define MPU_RASR_AP_SHIFT         24
 #define MPU_RASR_XN               (1UL << 28)
 
@@ -32,13 +28,13 @@ static uint32_t compute_region_size(uint32_t size_bytes) {
         s <<= 1;
         region_size++;
     }
-    return region_size + 4;
+    return region_size + 5;
 }
 
 void utms_mpu_init(void) {
     if (!(MPU_TYPE)) return;
 
-    utms_mpu_configure_region(UTMS_MPU_REGION_0, 0x00000000UL, 0xFFFFFFFFUL,
+    utms_mpu_configure_region(UTMS_MPU_REGION_0, 0x00000000UL, 1024,
                               UTMS_MPU_ACCESS_NONE, 0, 0);
 
     utms_mpu_configure_region(UTMS_MPU_REGION_1, 0x08000000UL, 1024 * 1024,
